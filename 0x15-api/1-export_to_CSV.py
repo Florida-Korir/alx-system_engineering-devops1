@@ -1,24 +1,35 @@
 #!/usr/bin/python3
-import csv
-import requests
-from sys import argv
+
 """
-accessing a url with employee ID to return information
+Python script that exports data in the CSV format
 """
 
+from requests import get
+from sys import argv
+import csv
 
 if __name__ == "__main__":
-    """
-    function to export the data into
-    csv file
-    """
-    ID = int(argv[1])
-    user = requests.get("https://jsonplaceholder.typicode.com/users/{}".
-                        format(ID)).json()
-    todo = requests.get("https://jsonplaceholder.typicode.com/todos?userId={}".
-                        format(ID)).json()
-    with open("{}.csv".format(ID), 'w') as csvf:
-        filler = csv.writer(csvf, delimiter=',', quoting=csv.QUOTE_ALL)
-        for task in todo:
-            filler.writerow([ID, user.get('username'),
-                            task.get('completed'), task.get('title')])
+    response = get('https://jsonplaceholder.typicode.com/todos/')
+    data = response.json()
+
+    row = []
+    response2 = get('https://jsonplaceholder.typicode.com/users')
+    data2 = response2.json()
+
+    for i in data2:
+        if i['id'] == int(argv[1]):
+            employee = i['username']
+
+    with open(argv[1] + '.csv', 'w', newline='') as file:
+        writ = csv.writer(file, quoting=csv.QUOTE_ALL)
+
+        for i in data:
+
+            row = []
+            if i['userId'] == int(argv[1]):
+                row.append(i['userId'])
+                row.append(employee)
+                row.append(i['completed'])
+                row.append(i['title'])
+
+                writ.writerow(row)
