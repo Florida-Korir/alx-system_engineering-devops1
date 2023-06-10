@@ -1,36 +1,26 @@
 #!/usr/bin/python3
-"""
-Script that, using this REST API, for a given employee ID, returns
-information about his/her TODO list progress
-and export data in the JSON format.
-"""
-
+"""Export to csv the information about user TODO list progress"""
 import json
 import requests
-from sys import argv
 
 
 if __name__ == "__main__":
+    url = "https://jsonplaceholder.typicode.com/"
+    uri_user = "users"
+    uri_todos = "todos"
 
-    import json
-    import requests
-    import sys
-
-    users = requests.get("https://jsonplaceholder.typicode.com/users")
-    users = users.json()
-    todos = requests.get('https://jsonplaceholder.typicode.com/todos')
-    todos = todos.json()
-    todoAll = {}
+    users = requests.get(url + uri_user).json()
+    dir_user_tasks = {}
 
     for user in users:
-        taskList = []
-        for task in todos:
-            if task.get('userId') == user.get('id'):
-                taskDict = {"username": user.get('username'),
-                            "task": task.get('title'),
-                            "completed": task.get('completed')}
-                taskList.append(taskDict)
-        todoAll[user.get('id')] = taskList
+        user_id = user.get("id")
+        user_name = user.get("username")
+        tasks = requests.get(url + uri_todos,
+                             params={"userId": user_id}).json()
+        user_tasks = ({user_id: [{"task": task.get("title"),
+                                  "completed": task.get("completed"),
+                                  "username": user_name} for task in tasks]})
+        dir_user_tasks.update(user_tasks)
 
-    with open('todo_all_employees.json', mode='w') as f:
-        json.dump(todoAll, f)
+    with open("todo_all_employees.json", "w") as jsonfile:
+        json.dump(dir_user_tasks, jsonfile)
